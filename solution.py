@@ -39,7 +39,8 @@ from typing import Set
            => O(6*m*n) => O(m*n)
 
     Space = O(max(n,m))
-            => O(m*n) when all oranges start rotten and no empty spots.
+             - or -
+            O(m*n) when all oranges start rotten and no empty spots.
 """
 class Solution1_BFS:
     def orangesRotting(self, grid: List[List[int]]) -> int:

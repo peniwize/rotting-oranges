@@ -35,19 +35,64 @@
 */
 
 /*
-    Time = O(?)
+    Use breadth first search.
+    Initially populate queue with all rotten oranges.
+    Each cycle through the queue represents one minute.
+    Return the cycle count if no fresh oranges exist after 
+    the breadth first search, else return -1.
 
-    Space = O(?)
+    Time = O(m*n + V + E)
+           => O(m*n + m*n + 4*m*n)
+           => O(6*m*n) => O(m*n)
+
+    Space = O(max(n,m))
+             - or -
+            O(m*n) when all oranges start rotten and no empty spots.
 */
 class Solution1_BFS {
+    static constexpr int neighbors_[][2] = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
 public:
     int orangesRotting(vector<vector<int>>& grid) {
+        auto const rows = grid.size(); // m == grid.length; 1 <= m
+        auto const cols = grid[0].size(); // n == grid[i].length; n <= 10
+        constexpr int const fresh = 1;
+        constexpr int const rotten = 2;
+        using point_t = tuple<int, int>;
+        deque<point_t> que{};
+        int freshOranges = 0;
 
-//
-//!\todo TODO: >>> Under Construction <<<
-//
-return -1;
+        for (size_t iy = 0; rows > iy; ++iy) {
+            for (size_t ix = 0; cols > ix; ++ix) {
+                switch (grid[iy][ix]) {
+                    case fresh: ++freshOranges; break;
+                    case rotten: que.emplace_back(make_tuple(ix, iy)); break;
+                }
+            }
+        }
 
+        int minutes = que.empty() ? 0 : -1;
+        
+        while (!que.empty()) {
+            for (auto queCnt = que.size(); queCnt; --queCnt) {
+                auto const [x, y] = que.front();
+                que.pop_front();
+                for (auto const [dx, dy] : neighbors_) {
+                    auto const nx = x + dx;
+                    auto const ny = y + dy;
+                    if (0 <= nx && cols > nx && 0 <= ny && rows > ny) {
+                        if (fresh == grid[ny][nx]) {
+                            que.emplace_back(make_tuple(nx, ny));
+                            grid[ny][nx] = rotten;
+                            --freshOranges;
+                        }
+                    }
+                }
+            }
+
+            ++minutes;
+        }
+
+        return 0 < freshOranges ? -1 : minutes;
     }
 };
 
@@ -100,6 +145,42 @@ TEST_CASE("Case 3")
     cerr << doctest::testName() << '\n';
     auto grid = vector<vector<int>>{
         {0,2},
+    };
+    int expected = 0;
+    auto solution = Solution1_BFS{};
+    { // New scope.
+        auto const start = std::chrono::steady_clock::now();
+        auto const result = solution.orangesRotting(grid);
+        CHECK(expected == result);
+        cerr << "Elapsed time: " << elapsed_time_t{start} << '\n';
+    }
+    cerr << "\n";
+}
+
+TEST_CASE("Case 4")
+{
+    cerr << doctest::testName() << '\n';
+    auto grid = vector<vector<int>>{
+        {2,1,1},
+        {1,1,1},
+        {0,1,2}
+    };
+    int expected = 2;
+    auto solution = Solution1_BFS{};
+    { // New scope.
+        auto const start = std::chrono::steady_clock::now();
+        auto const result = solution.orangesRotting(grid);
+        CHECK(expected == result);
+        cerr << "Elapsed time: " << elapsed_time_t{start} << '\n';
+    }
+    cerr << "\n";
+}
+
+TEST_CASE("Case 5")
+{
+    cerr << doctest::testName() << '\n';
+    auto grid = vector<vector<int>>{
+        {0},
     };
     int expected = 0;
     auto solution = Solution1_BFS{};
